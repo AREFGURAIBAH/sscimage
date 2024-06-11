@@ -2,6 +2,7 @@ from kivy.app import App
 from kivy.uix.image import Image
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.video import Video
+from kivy.clock import Clock
 import requests
 
 class MainApp(App):
@@ -15,6 +16,8 @@ class MainApp(App):
             'https://example.com/image4.jpg',
             'https://example.com/image5.jpg'
         ]
+
+        self.video_player = None  # Initialize video player
 
         for i, image_url in enumerate(self.thumbnail_image_urls):
             if i == 0:
@@ -35,14 +38,23 @@ class MainApp(App):
 
     def open_video_player(self, instance, touch):
         if instance.collide_point(*touch.pos):
-            video_player = Video(source='https://example.com/video.m3u8', size_hint=(None, None), size=(800, 600))
-            self.root.add_widget(video_player)
-            video_player.play()
+            if self.video_player is None:
+                self.video_player = Video(source='https://example.com/video.m3u8', size_hint=(None, None), size=(800, 600))
+                self.video_player.state = 'play'
+                self.root.add_widget(self.video_player)
+                Clock.schedule_interval(self.check_video_state, 0.1)
+            else:
+                self.video_player.state = 'play'
 
     def open_image_viewer(self, instance, touch):
         if instance.collide_point(*touch.pos):
             image_viewer = Image(source=instance.source, size_hint=(None, None), size=(800, 600))
             self.root.add_widget(image_viewer)
+
+    def check_video_state(self, dt):
+        if self.video_player.state == 'stop':
+            self.root.remove_widget(self.video_player)
+            self.video_player = None
 
 if __name__ == '__main__':
     MainApp().run()
