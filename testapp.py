@@ -1,6 +1,7 @@
 from kivy.app import App
 from kivy.uix.image import Image
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.video import Video
 import requests
 
 class MainApp(App):
@@ -15,9 +16,13 @@ class MainApp(App):
             'https://example.com/image5.jpg'
         ]
 
-        for image_url in self.thumbnail_image_urls:
-            thumbnail = self.load_image_from_url(image_url)
-            thumbnail.bind(on_touch_down=self.open_image_viewer)
+        for i, image_url in enumerate(self.thumbnail_image_urls):
+            if i == 0:
+                thumbnail = self.load_image_from_url(image_url)
+                thumbnail.bind(on_touch_down=self.open_video_player)
+            else:
+                thumbnail = self.load_image_from_url(image_url)
+                thumbnail.bind(on_touch_down=self.open_image_viewer)
             layout.add_widget(thumbnail)
 
         return layout
@@ -27,6 +32,12 @@ class MainApp(App):
         with open('temp_image.jpg', 'wb') as file:
             file.write(response.content)
         return Image(source='temp_image.jpg', size_hint=(0.2, 0.2), allow_stretch=True, keep_ratio=False)
+
+    def open_video_player(self, instance, touch):
+        if instance.collide_point(*touch.pos):
+            video_player = Video(source='https://example.com/video.m3u8', size_hint=(None, None), size=(800, 600))
+            self.root.add_widget(video_player)
+            video_player.play()
 
     def open_image_viewer(self, instance, touch):
         if instance.collide_point(*touch.pos):
